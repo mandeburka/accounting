@@ -12,6 +12,13 @@ object AccountActor {
 }
 
 class AccountActor(id: Int) extends Actor {
+  import AccountActor._
 
-  def receive: Receive = ???
+  val store = context.actorSelection("/accounting/user/store")
+
+  def receive: Receive = {
+    case Debit(amount) => store.tell(StoreActor.Update(id, amount), sender())
+    case Credit(amount) => store.tell(StoreActor.Update(id, -amount), sender())
+    case Summary => store.tell(StoreActor.Get(id), sender())
+  }
 }

@@ -1,6 +1,6 @@
 package accounting.actors
 
-import akka.actor.Actor
+import akka.actor.{Props, Terminated, ActorRef, Actor}
 
 object Router {
 
@@ -10,5 +10,16 @@ object Router {
 
 class Router extends Actor {
 
-  def receive: Receive = ???
+  def receive: Receive = withActors()
+  def withActors(actors: Map[Int, ActorRef] = Map.empty): Actor.Receive = {
+    case Router.Forward(id, m) =>
+      actors.getOrElse(id, {
+        val actor = context.actorOf(Props(classOf[AccountActor], id))
+        context.become(withActors(actors + (id -> actor)))
+        context watch actor
+        actor
+      }).tell(m, sender())
+    case Terminated(a) =>
+      context.become(withActors(actors.filterNot(_ == a)))
+  }
 }

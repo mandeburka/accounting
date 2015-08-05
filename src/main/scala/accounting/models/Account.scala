@@ -8,4 +8,6 @@ case class Account(id: Int, name: String, transactions: Vector[Transaction]) {
         case Transaction.TransactionType.Credit => -tr.amount
       } + acc
   }
+
+  def updated(t: Transaction): Account = Account(id, name, transactions :+ t)
 }

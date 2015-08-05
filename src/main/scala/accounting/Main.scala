@@ -1,0 +1,5 @@
+package accounting
+
+object Main {
+
+}

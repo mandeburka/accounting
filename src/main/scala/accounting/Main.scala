@@ -15,7 +15,7 @@ object Main {
     router ! Router.Forward(1, AccountActor.Debit(20))
     router ! Router.Forward(1, AccountActor.Credit(10))
     router ! Router.Forward(1, AccountActor.Credit(20))
-    router ! PoisonPill
+    router ! Router.Forward(1, AccountActor.Debit(1))
   }
 }
 

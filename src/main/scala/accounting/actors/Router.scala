@@ -1,6 +1,7 @@
 package accounting.actors
 
-import akka.actor.{Props, Terminated, ActorRef, Actor}
+import akka.actor._
+import scala.concurrent.duration._
 
 object Router {
 
@@ -9,7 +10,7 @@ object Router {
 }
 
 class Router extends Actor {
-
+  context.setReceiveTimeout(10 second)
   def receive: Receive = withActors()
   def withActors(actors: Map[Int, ActorRef] = Map.empty): Actor.Receive = {
     case Router.Forward(id, m) =>
@@ -21,5 +22,7 @@ class Router extends Actor {
       }).tell(m, sender())
     case Terminated(a) =>
       context.become(withActors(actors.filterNot(_ == a)))
+    case ReceiveTimeout =>
+      context.stop(self)
   }
 }

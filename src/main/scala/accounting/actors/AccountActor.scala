@@ -1,6 +1,7 @@
 package accounting.actors
 
 import akka.actor.{ReceiveTimeout, Actor}
+import akka.event.Logging
 import scala.concurrent.duration._
 
 object AccountActor {
@@ -14,11 +15,16 @@ object AccountActor {
 
 class AccountActor(id: Int) extends Actor {
   import AccountActor._
-  val store = context.actorSelection("/accounting/user/store")
+  val log = Logging(context.system, this)
+  val store = context.actorSelection("/user/store")
   context.setReceiveTimeout(1 minute)
   def receive: Receive = {
-    case Debit(amount) => store.tell(StoreActor.Update(id, amount), sender())
-    case Credit(amount) => store.tell(StoreActor.Update(id, -amount), sender())
+    case Debit(amount) =>
+      log.info(s"Trying to debit account ($id) with $amount")
+      store.tell(StoreActor.Update(id, amount), sender())
+    case Credit(amount) =>
+      log.info(s"Trying to credit account ($id) with $amount")
+      store.tell(StoreActor.Update(id, -amount), sender())
     case Summary => store.tell(StoreActor.Get(id), sender())
     case ReceiveTimeout =>
       context.stop(self)
